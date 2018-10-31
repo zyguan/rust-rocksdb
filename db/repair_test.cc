@@ -74,7 +74,7 @@ TEST_F(RepairTest, CorruptManifest) {
 
   Close();
   ASSERT_OK(env_->FileExists(manifest_path));
-  CreateFile(env_, manifest_path, "blah");
+  CreateFile(env_, manifest_path, "blah", false /* use_fsync */);
   ASSERT_OK(RepairDB(dbname_, CurrentOptions()));
   Reopen(CurrentOptions());
 
@@ -136,7 +136,7 @@ TEST_F(RepairTest, CorruptSst) {
   Flush();
   auto sst_path = GetFirstSstPath();
   ASSERT_FALSE(sst_path.empty());
-  CreateFile(env_, sst_path, "blah");
+  CreateFile(env_, sst_path, "blah", false /* use_fsync */);
 
   Close();
   ASSERT_OK(RepairDB(dbname_, CurrentOptions()));
@@ -172,6 +172,40 @@ TEST_F(RepairTest, UnflushedSst) {
   GetAllSSTFiles(&total_ssts_size);
   ASSERT_GT(total_ssts_size, 0);
   ASSERT_EQ(Get("key"), "val");
+}
+
+TEST_F(RepairTest, SeparateWalDir) {
+  do {
+    Options options = CurrentOptions();
+    DestroyAndReopen(options);
+    Put("key", "val");
+    Put("foo", "bar");
+    VectorLogPtr wal_files;
+    ASSERT_OK(dbfull()->GetSortedWalFiles(wal_files));
+    ASSERT_EQ(wal_files.size(), 1);
+    uint64_t total_ssts_size;
+    GetAllSSTFiles(&total_ssts_size);
+    ASSERT_EQ(total_ssts_size, 0);
+    std::string manifest_path =
+      DescriptorFileName(dbname_, dbfull()->TEST_Current_Manifest_FileNo());
+
+    Close();
+    ASSERT_OK(env_->FileExists(manifest_path));
+    ASSERT_OK(env_->DeleteFile(manifest_path));
+    ASSERT_OK(RepairDB(dbname_, options));
+
+    // make sure that all WALs are converted to SSTables.
+    options.wal_dir = "";
+
+    Reopen(options);
+    ASSERT_OK(dbfull()->GetSortedWalFiles(wal_files));
+    ASSERT_EQ(wal_files.size(), 0);
+    GetAllSSTFiles(&total_ssts_size);
+    ASSERT_GT(total_ssts_size, 0);
+    ASSERT_EQ(Get("key"), "val");
+    ASSERT_EQ(Get("foo"), "bar");
+
+ } while(ChangeWalOptions());
 }
 
 TEST_F(RepairTest, RepairMultipleColumnFamilies) {
