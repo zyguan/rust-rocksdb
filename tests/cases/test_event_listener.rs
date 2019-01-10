@@ -11,11 +11,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use cases::test_ingest_external_file::gen_sst;
 use rocksdb::*;
 use std::sync::atomic::*;
 use std::sync::Arc;
 use tempdir::TempDir;
-use test_ingest_external_file::gen_sst;
 
 #[derive(Default, Clone)]
 struct EventCounter {
@@ -99,7 +99,8 @@ fn test_event_listener_basic() {
         db.put(
             format!("{:04}", i).as_bytes(),
             format!("{:04}", i).as_bytes(),
-        ).unwrap();
+        )
+        .unwrap();
     }
     db.flush(true).unwrap();
     assert_ne!(counter.flush.load(Ordering::SeqCst), 0);
@@ -108,7 +109,8 @@ fn test_event_listener_basic() {
         db.put(
             format!("{:04}", i).as_bytes(),
             format!("{:04}", i).as_bytes(),
-        ).unwrap();
+        )
+        .unwrap();
     }
     db.flush(true).unwrap();
     let flush_cnt = counter.flush.load(Ordering::SeqCst);
