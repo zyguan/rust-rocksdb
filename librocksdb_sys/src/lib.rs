@@ -592,6 +592,7 @@ extern "C" {
         num_paths: c_int,
     );
     pub fn crocksdb_options_set_vector_memtable_factory(options: *mut Options, reserved_bytes: u64);
+    pub fn crocksdb_options_set_atomic_flush(option: *mut Options, enable: bool);
     pub fn crocksdb_filterpolicy_create_bloom_full(bits_per_key: c_int) -> *mut DBFilterPolicy;
     pub fn crocksdb_filterpolicy_create_bloom(bits_per_key: c_int) -> *mut DBFilterPolicy;
     pub fn crocksdb_open(
@@ -998,6 +999,13 @@ extern "C" {
     pub fn crocksdb_flush_cf(
         db: *mut DBInstance,
         cf: *mut DBCFHandle,
+        options: *const DBFlushOptions,
+        err: *mut *mut c_char,
+    );
+    pub fn crocksdb_flush_cfs(
+        db: *mut DBInstance,
+        cfs: *const *mut DBCFHandle,
+        num_cfs: size_t,
         options: *const DBFlushOptions,
         err: *mut *mut c_char,
     );

@@ -1261,6 +1261,19 @@ void crocksdb_flush_cf(
   SaveError(errptr, db->rep->Flush(options->rep, column_family->rep));
 }
 
+void crocksdb_flush_cfs(
+  crocksdb_t* db,
+  const crocksdb_column_family_handle_t** column_familys,
+  int num_handles,
+  const crocksdb_flushoptions_t* options,
+  char** errptr) {
+  std::vector<rocksdb::ColumnFamilyHandle*> handles(num_handles);
+  for (int i = 0; i < num_handles; i++) {
+    handles[i] = column_familys[i]->rep;
+  }
+  SaveError(errptr, db->rep->Flush(options->rep, handles));
+}
+
 void crocksdb_flush_wal(
     crocksdb_t* db,
     unsigned char sync,
@@ -2765,6 +2778,10 @@ void crocksdb_options_set_ratelimiter(crocksdb_options_t *opt, crocksdb_ratelimi
 
 void crocksdb_options_set_vector_memtable_factory(crocksdb_options_t* opt, uint64_t reserved_bytes) {
   opt->rep.memtable_factory.reset(new VectorRepFactory(reserved_bytes));
+}
+
+void crocksdb_options_set_atomic_flush(crocksdb_options_t* opt, unsigned char enable) {
+  opt->rep.atomic_flush = enable;
 }
 
 bool crocksdb_load_latest_options(const char* dbpath, crocksdb_env_t* env,

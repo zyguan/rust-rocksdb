@@ -1007,6 +1007,12 @@ impl DBOptions {
             );
         }
     }
+
+    pub fn set_atomic_flush(&self, enable: bool) {
+        unsafe {
+            crocksdb_ffi::crocksdb_options_set_atomic_flush(self.inner, enable);
+        }
+    }
 }
 
 pub struct ColumnFamilyOptions {
