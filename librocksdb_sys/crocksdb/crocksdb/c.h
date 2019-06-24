@@ -1965,6 +1965,7 @@ struct ctitandb_blob_index_t {
 };
 
 typedef struct ctitandb_options_t ctitandb_options_t;
+typedef struct ctitandb_readoptions_t ctitandb_readoptions_t;
 typedef struct ctitandb_blob_index_t ctitandb_blob_index_t;
 
 extern C_ROCKSDB_LIBRARY_API crocksdb_t* ctitandb_open_column_families(
@@ -2020,10 +2021,10 @@ extern C_ROCKSDB_LIBRARY_API void ctitandb_options_set_min_gc_batch_size(
 
 extern C_ROCKSDB_LIBRARY_API void
 ctitandb_options_set_blob_file_discardable_ratio(ctitandb_options_t* options,
-                                                 float ratio);
+                                                 double ratio);
 
 extern C_ROCKSDB_LIBRARY_API void ctitandb_options_set_sample_file_size_ratio(
-    ctitandb_options_t* options, float ratio);
+    ctitandb_options_t* options, double ratio);
 
 extern C_ROCKSDB_LIBRARY_API void
 ctitandb_options_set_merge_small_file_threshold(ctitandb_options_t* options,
@@ -2032,14 +2033,50 @@ ctitandb_options_set_merge_small_file_threshold(ctitandb_options_t* options,
 extern C_ROCKSDB_LIBRARY_API void ctitandb_options_set_max_background_gc(
     ctitandb_options_t* options, int32_t size);
 
+extern C_ROCKSDB_LIBRARY_API void ctitandb_options_set_purge_obsolete_files_period(
+    ctitandb_options_t* options, unsigned int period);
+
 extern C_ROCKSDB_LIBRARY_API void ctitandb_options_set_blob_cache(
     ctitandb_options_t* options, crocksdb_cache_t* cache);
 
 extern C_ROCKSDB_LIBRARY_API void ctitandb_options_set_discardable_ratio(
-    ctitandb_options_t* options, float ratio);
+    ctitandb_options_t* options, double ratio);
 
 extern void ctitandb_options_set_sample_ratio(ctitandb_options_t* options,
-                                              float ratio);
+                                              double ratio);
+
+/* TitanReadOptions */
+
+extern C_ROCKSDB_LIBRARY_API ctitandb_readoptions_t* ctitandb_readoptions_create();
+
+extern C_ROCKSDB_LIBRARY_API void ctitandb_readoptions_destroy(ctitandb_readoptions_t* opts);
+
+extern C_ROCKSDB_LIBRARY_API bool ctitandb_readoptions_key_only(ctitandb_readoptions_t* opts);
+
+extern C_ROCKSDB_LIBRARY_API void ctitandb_readoptions_set_key_only(ctitandb_readoptions_t* opts,
+                                        bool v);
+
+/* Titan Iterator */
+
+extern C_ROCKSDB_LIBRARY_API crocksdb_iterator_t* ctitandb_create_iterator(
+    crocksdb_t* db,
+    const crocksdb_readoptions_t* options,
+    const ctitandb_readoptions_t* titan_options);
+
+extern C_ROCKSDB_LIBRARY_API crocksdb_iterator_t* ctitandb_create_iterator_cf(
+    crocksdb_t* db,
+    const crocksdb_readoptions_t* options,
+    const ctitandb_readoptions_t* titan_options,
+    crocksdb_column_family_handle_t* column_family);
+
+extern C_ROCKSDB_LIBRARY_API void ctitandb_create_iterators(
+    crocksdb_t *db,
+    crocksdb_readoptions_t* options,
+    ctitandb_readoptions_t* titan_options,
+    crocksdb_column_family_handle_t** column_families,
+    crocksdb_iterator_t** iterators,
+    size_t size,
+    char** errptr);
 
 #ifdef __cplusplus
 }  /* end extern "C" */
