@@ -84,6 +84,7 @@ fn build_rocksdb() -> Build {
         cfg.define("FORCE_SSE42", "ON");
     }
     let dst = cfg
+        .cxxflag(std::ffi::OsString::from("-Wno-deprecated-copy -Wno-redundant-move -Wno-pessimizing-move -Wno-error=sign-compare"))
         .register_dep("Z")
         .define("WITH_ZLIB", "ON")
         .register_dep("BZIP2")
